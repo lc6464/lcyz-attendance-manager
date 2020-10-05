@@ -1,0 +1,14 @@
+{% extends "layout.html" %}{% block title %}首页{% endblock %}
+{% block css %}<style>
+#welcome { font-size: 1.8rem; text-align: center; }
+header h1 { font-size: 2rem; margin: 1rem 0; }
+</style>{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/list/summary.css"/>{% endblock %}
+{% block nav %}{% endblock %}
+{% block header %}<h1>龙川县第一中学班级考勤管理系统</h1>{% endblock %}
+{% block main %}<h2 id="welcome">欢迎回来，{{ user }}！</h2><div><ul>
+	<li><a href="/account">账号管理</a></li>
+	<li><a href="/student">学生管理</a></li>
+	<li><a href="/attendance/register">考勤登记</a></li>
+	<li><a href="/attendance/record">查看记录</a></li>
+</ul></div>{% endblock %}

@@ -1,0 +1,1 @@
+from database.deal import student, information, attendance, account
