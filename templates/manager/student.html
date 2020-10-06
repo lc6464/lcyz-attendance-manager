@@ -2,18 +2,18 @@
 {% block css %}<style>header h1 { font-size: 2.5rem; margin: 1rem 0; }
 @media (max-width: 295px) { body::before { height: 6rem; } }
 form { text-align: center; }
-#formDiv { background: #353535; display: inline-block; padding: 1.2rem 1.5rem 2rem; }
+.formDiv { background: #353535; display: inline-block; padding: 1.2rem 1.5rem 2rem; }
 label { display: block; margin: 0.7rem 0; font-size: 1.2rem; }
 label label { display: inline; margin: 0; font-size: 1.3rem; }
-#inputs { margin: 1.6rem 0; }
-#buttons button { padding: 0.3rem 0.8rem; font-size: 1.15rem; }
-#buttons button:first-of-type { margin-right: 1.5rem; }
+.inputs { margin: 1.6rem 0; }
+.buttons button { padding: 0.3rem 0.8rem; font-size: 1.15rem; }
+.buttons button:first-of-type { margin-right: 1.5rem; }
 [type='radio']+label::before { content: '-'; color: rgba(0, 0, 0, 0); border-radius: 50%;
 	display: inline-block; width: 1.3rem; height: 1.3rem; border: 0.1rem solid #0AF; }
 [type='radio']:checked+label::before { background: #0AF; }
 label label:first-of-type { margin: 0 0.4rem; }
-#insert { position: fixed; transform: translate(-50%, -50%); left: 50%; top: -50rem; transition: 0.5s top; z-index: 110; }
-#closeAdd { width: 1rem; height: 1rem; display: inline-block; cursor: pointer; position: absolute; top: 1.2rem; right: 1.2rem; }
+#insert, #update { position: fixed; transform: translate(-50%, -50%); left: 50%; top: -50rem; transition: 0.5s top; z-index: 110; }
+#closeAdd, #closeUpdate { width: 1rem; height: 1rem; display: inline-block; cursor: pointer; position: absolute; top: 1.2rem; right: 1.2rem; }
 #controls { text-align: center; }
 #students { text-align: center; }
 #students h2 { font-size: 1.6rem; }
@@ -36,16 +36,29 @@ td:nth-last-of-type(odd) { min-width: 7rem; }
 {% block header %}<h1>学生管理</h1>{% endblock %}
 {% block main %}<div id="controls"><button id="openAdd">添加学生</button><button id="search">查找学生</button></div>
 <form id="insert">
-	<div id="formDiv"><img id="closeAdd" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" />
+	<div class="formDiv"><img id="closeAdd" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" />
 		<h2>请填写学生信息</h2>
-		<div id="inputs"><label>姓名：<input name="Name" placeholder="请输入姓名" required type="text" /></label>
+		<div class="inputs"><label>姓名：<input name="Name" placeholder="请输入姓名" required type="text" /></label>
 			<label>性别：<input name="Sex" id="male" type="radio" value="男" hidden /><label for="male"
 					tabindex="0">男</label>
 				<input name="Sex" id="female" type="radio" value="女" hidden /><label for="female"
 					tabindex="0">女</label></label>
 			<label>学号：<input name="SID" placeholder="请输入学号" required type="number" min="1000000000"
 					max="9999999999" /></label></div>
-		<div id="buttons"><button type="reset">重置</button><button type="submit">添加</button></div>
+		<div class="buttons"><button type="reset">重置</button><button type="submit">添加</button></div>
+	</div>
+</form>
+<form id="update">
+	<div class="formDiv"><img id="closeUpdate" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" />
+		<h2>请填写要修改的信息</h2><input name="ID" type="hidden"/>
+		<div class="inputs"><label>姓名：<input name="Name" placeholder="请输入姓名" required type="text" /></label>
+			<label>性别：<input name="Sex" id="maleUpdate" type="radio" value="男" hidden /><label for="maleUpdate"
+					tabindex="0">男</label>
+				<input name="Sex" id="femaleUpdate" type="radio" value="女" hidden /><label for="femaleUpdate"
+					tabindex="0">女</label></label>
+			<label>学号：<input name="SID" placeholder="请输入学号" required type="number" min="1000000000"
+					max="9999999999" /></label></div>
+		<div class="buttons"><button type="reset">重置</button><button type="submit">添加</button></div>
 	</div>
 </form>
 <div id="students">
@@ -53,19 +66,26 @@ td:nth-last-of-type(odd) { min-width: 7rem; }
 	<table><thead><tr><th>ID</th><th>姓名</th><th>性别</th><th>学号</th><th>控制</th></tr></thead><tbody></tbody></table>
 </div>
 <script>
-	$.ajax('/student/get').done(function(data){
-		if (data.code === 0) {
-			$(data.data).each(function(){
-				$('tbody').append(`<tr><td>${this[0]}</td><td>${this[1]}</td><td>${this[2]}</td><td>${this[3]}</td>\
+	function getStudents() {
+		$.ajax('/student/get').done(function(data){
+			if (data.code === 0) {
+				$('tbody').html(''); $(data.data).each(function(){
+					$('tbody').append(`<tr><td>${this[0]}</td><td>${this[1]}</td><td>${this[2]}</td><td>${this[3]}</td>\
 <td><img data-id="${this[0]}" class="editStudent" src="/static/js/jquery/mobile/images/icons-svg/edit-white.svg" alt="修改学生" title="修改此学生" />
 <img data-id="${this[0]}" class="removeStudent" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="删除学生" title="删除此学生" /></td></tr>`);
-			});
-		} else if (data.code === 2) {
-			$('table').html(''); $('#students').append('<div style="font-size:1.3rem">无数据！</div>')
-		} else {
-			Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning');
-		}
+				});
+			} else if (data.code === 2) {
+				$('table').html(''); $('#students').append('<div style="font-size:1.3rem">无数据！</div>');
+			} else {
+				$('table').html(''); Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning');
+			}
+		});
+	}
+	$('.editStudent').click(function(){
+		var self = $(this);
+		$('#update').css('top', '35%');
 	});
+	$('#closeUpdate').click(function () { $('#update').css('top', '-50rem'); });
 	$('#openAdd').click(function () { $('#insert').css('top', '35%'); });
 	$('#closeAdd').click(function () { $('#insert').css('top', '-50rem'); });
 	$('[for]').keydown(function (e) { if (e.keyCode === 13) { $('#' + $(this).attr('for'))[0].checked = true; } });
@@ -75,7 +95,7 @@ td:nth-last-of-type(odd) { min-width: 7rem; }
 			console.log(data); console.log(success); console.log(xhr); console.log($form);
 			switch (data.code) {
 				case 0:
-					Swal.fire('成功', `${data.msg}`, 'success'); break;
+					Swal.fire('成功', `${data.msg}`, 'success').then(getStudents); break;
 				case 7:
 					Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning'); break;
 				case 8:
@@ -101,8 +121,8 @@ td:nth-last-of-type(odd) { min-width: 7rem; }
 					Swal.fire('失败', data.msg, 'error');
 			}
 		}, error: function (xhr, error, text, $form) {
-			console.log(xhr); console.log(`${error}: ${text}`); console.log($form);
-			Swal.fire('添加失败！', '详细信息请见控制台！', 'error');
+			console.log(xhr); console.log(`${error}: ${text}`); console.log($form); Swal.fire('添加失败！', '详细信息请见控制台！', 'error');
 		}, beforeSubmit: function (arr, $form) { console.log(arr); console.log($form); if (arr.length !== 3) { Swal.fire('提示', '请选择性别！', 'warning'); return false; } }
 	});
+	getStudents();
 </script>{% endblock %}
