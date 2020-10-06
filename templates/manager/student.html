@@ -12,8 +12,17 @@ label label { display: inline; margin: 0; font-size: 1.3rem; }
 	display: inline-block; width: 1.3rem; height: 1.3rem; border: 0.1rem solid #0AF; }
 [type='radio']:checked+label::before { background: #0AF; }
 label label:first-of-type { margin: 0 0.4rem; }
-#insert { position: fixed; transform: translate(-50%, -50%); left: 50%; top: -50rem; transition: 1s top; z-index: 110; }
+#insert { position: fixed; transform: translate(-50%, -50%); left: 50%; top: -50rem; transition: 0.5s top; z-index: 110; }
 #closeAdd { width: 1rem; height: 1rem; display: inline-block; cursor: pointer; position: absolute; top: 1.2rem; right: 1.2rem; }
+#controls { text-align: center; }
+#students { text-align: center; }
+#students h2 { font-size: 1.6rem; }
+table { margin: 0 auto; text-align: center; border-collapse: collapse; font-family: 'Microsoft YaHei'; }
+tr { border-top: 0.08rem solid white; }
+th, td { padding: 0.4rem 0.8rem; min-width: 3rem; }
+td:nth-last-of-type(odd) { min-width: 7rem; }
+.editStudent, .removeStudent { vertical-align: baseline; }
+.editStudent { margin-right: 0.5rem; }
 
 .swal2-container { font-family: 'Microsoft YaHei'; }
 .swal2-popup, .swal2-validation-message { background: #111 !important; }
@@ -25,7 +34,7 @@ label label:first-of-type { margin: 0 0.4rem; }
 <script src="/static/js/sweetalert2-10.3.5.js"></script>{% endblock %}
 {% block nav %}<a href="/" title="首页">首页</a>{% endblock %}
 {% block header %}<h1>学生管理</h1>{% endblock %}
-{% block main %}<div><button id="openAdd">添加学生</button></div>
+{% block main %}<div id="controls"><button id="openAdd">添加学生</button><button id="search">查找学生</button></div>
 <form id="insert">
 	<div id="formDiv"><img id="closeAdd" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" />
 		<h2>请填写学生信息</h2>
@@ -39,7 +48,24 @@ label label:first-of-type { margin: 0 0.4rem; }
 		<div id="buttons"><button type="reset">重置</button><button type="submit">添加</button></div>
 	</div>
 </form>
+<div id="students">
+	<h2>学生列表</h2>
+	<table><thead><tr><th>ID</th><th>姓名</th><th>性别</th><th>学号</th><th>控制</th></tr></thead><tbody></tbody></table>
+</div>
 <script>
+	$.ajax('/student/get').done(function(data){
+		if (data.code === 0) {
+			$(data.data).each(function(){
+				$('tbody').append(`<tr><td>${this[0]}</td><td>${this[1]}</td><td>${this[2]}</td><td>${this[3]}</td>\
+<td><img data-id="${this[0]}" class="editStudent" src="/static/js/jquery/mobile/images/icons-svg/edit-white.svg" alt="修改学生" title="修改此学生" />
+<img data-id="${this[0]}" class="removeStudent" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="删除学生" title="删除此学生" /></td></tr>`);
+			});
+		} else if (data.code === 2) {
+			$('table').html(''); $('#students').append('<div style="font-size:1.3rem">无数据！</div>')
+		} else {
+			Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning');
+		}
+	});
 	$('#openAdd').click(function () { $('#insert').css('top', '35%'); });
 	$('#closeAdd').click(function () { $('#insert').css('top', '-50rem'); });
 	$('[for]').keydown(function (e) { if (e.keyCode === 13) { $('#' + $(this).attr('for'))[0].checked = true; } });
