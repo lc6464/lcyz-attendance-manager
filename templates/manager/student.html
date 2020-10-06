@@ -1,0 +1,82 @@
+{% extends "layout.html" %}{% block title %}学生管理{% endblock %}
+{% block css %}<style>header h1 { font-size: 2.5rem; margin: 1rem 0; }
+@media (max-width: 295px) { body::before { height: 6rem; } }
+form { text-align: center; }
+#formDiv { background: #353535; display: inline-block; padding: 1.2rem 1.5rem 2rem; }
+label { display: block; margin: 0.7rem 0; font-size: 1.2rem; }
+label label { display: inline; margin: 0; font-size: 1.3rem; }
+#inputs { margin: 1.6rem 0; }
+#buttons button { padding: 0.3rem 0.8rem; font-size: 1.15rem; }
+#buttons button:first-of-type { margin-right: 1.5rem; }
+[type='radio']+label::before { content: '-'; color: rgba(0, 0, 0, 0); border-radius: 50%;
+	display: inline-block; width: 1.3rem; height: 1.3rem; border: 0.1rem solid #0AF; }
+[type='radio']:checked+label::before { background: #0AF; }
+label label:first-of-type { margin: 0 0.4rem; }
+#insert { position: fixed; transform: translate(-50%, -50%); left: 50%; top: -50rem; transition: 1s top; z-index: 110; }
+#closeAdd { width: 1rem; height: 1rem; display: inline-block; cursor: pointer; position: absolute; top: 1.2rem; right: 1.2rem; }
+
+.swal2-container { font-family: 'Microsoft YaHei'; }
+.swal2-popup, .swal2-validation-message { background: #111 !important; }
+.swal2-header, .swal2-content, .swal2-footer { color: white !important; }
+.swal2-title { color: #CCC !important; }
+</style>{% endblock %}
+{% block head %} <script src="/static/js/jquery/3.5.1.js"></script>
+<script src="/static/js/jquery/form.js"></script>
+<script src="/static/js/sweetalert2-10.3.5.js"></script>{% endblock %}
+{% block nav %}<a href="/" title="首页">首页</a>{% endblock %}
+{% block header %}<h1>学生管理</h1>{% endblock %}
+{% block main %}<div><button id="openAdd">添加学生</button></div>
+<form id="insert">
+	<div id="formDiv"><img id="closeAdd" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" />
+		<h2>请填写学生信息</h2>
+		<div id="inputs"><label>姓名：<input name="Name" placeholder="请输入姓名" required type="text" /></label>
+			<label>性别：<input name="Sex" id="male" type="radio" value="男" hidden /><label for="male"
+					tabindex="0">男</label>
+				<input name="Sex" id="female" type="radio" value="女" hidden /><label for="female"
+					tabindex="0">女</label></label>
+			<label>学号：<input name="SID" placeholder="请输入学号" required type="number" min="1000000000"
+					max="9999999999" /></label></div>
+		<div id="buttons"><button type="reset">重置</button><button type="submit">添加</button></div>
+	</div>
+</form>
+<script>
+	$('#openAdd').click(function () { $('#insert').css('top', '35%'); });
+	$('#closeAdd').click(function () { $('#insert').css('top', '-50rem'); });
+	$('[for]').keydown(function (e) { if (e.keyCode === 13) { $('#' + $(this).attr('for'))[0].checked = true; } });
+	$('#insert').ajaxForm({
+		url: '/student/insert', type: 'post',
+		dataType: 'json', success: function (data, success, xhr, $form) {
+			console.log(data); console.log(success); console.log(xhr); console.log($form);
+			switch (data.code) {
+				case 0:
+					Swal.fire('成功', `${data.msg}`, 'success'); break;
+				case 7:
+					Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning'); break;
+				case 8:
+					Swal.fire({
+						title: '敏感操作验证', text: '请输入此账户的密码：', input: 'password', inputAttributes: { required: 'required' },
+						icon: 'question', inputPlaceholder: '请输入此账户的密码', cancelButtonText: '取消',
+						showCancelButton: true, confirmButtonText: '验证', showLoaderOnConfirm: true, allowOutsideClick: () => !Swal.isLoading(),
+						preConfirm: Password => $.ajax('/sudo', { type: 'post', data: { Password } }).done(function (data, success, xhr) {
+							switch (data.code) {
+								case 0:
+									Swal.fire('成功', `${data.msg}30分钟内无需再次验证！`, 'success'); break;
+								case 5:
+									Swal.fire('提示', data.msg, 'info'); break;
+								case 7:
+									Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning'); break;
+								default:
+									Swal.fire('失败', data.msg, 'error');
+							}
+						}).fail(function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire('验证失败！', '详细信息请见控制台！', 'error'); })
+					}); break;
+				default:
+					$form[0].reset();
+					Swal.fire('失败', data.msg, 'error');
+			}
+		}, error: function (xhr, error, text, $form) {
+			console.log(xhr); console.log(`${error}: ${text}`); console.log($form);
+			Swal.fire('添加失败！', '详细信息请见控制台！', 'error');
+		}, beforeSubmit: function (arr, $form) { console.log(arr); console.log($form); if (arr.length !== 3) { Swal.fire('提示', '请选择性别！', 'warning'); return false; } }
+	});
+</script>{% endblock %}

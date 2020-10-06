@@ -1,4 +1,4 @@
-import re
+import re, time
 from database import student, information, attendance, account
 
 def password(password):
@@ -11,6 +11,14 @@ def login(session):
 		if len(acc) == 1:
 			if acc[0][2] == session['password']:
 				return True
-	session['user'] = None
-	session['password'] = None
+	session.pop('user', None)
+	session.pop('password', None)
+	return False
+
+def sudo(session):
+	if 'sudo' in session:
+		if time.time() - session['sudo'] <= 1800:
+			session['sudo'] = time.time()
+			return True
+	session.pop('sudo', None)
 	return False
