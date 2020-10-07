@@ -21,15 +21,18 @@ table { margin: 0 auto; text-align: center; border-collapse: collapse; font-fami
 tr { border-top: 0.08rem solid white; }
 th, td { padding: 0.4rem 0.8rem; min-width: 3rem; }
 td:nth-last-of-type(odd) { min-width: 7rem; }
-.editStudent, .removeStudent { vertical-align: baseline; }
+.editStudent, .removeStudent { vertical-align: baseline; cursor: pointer; }
 .editStudent { margin-right: 0.5rem; }
+#update [name="ID"] { width: 8rem; margin-right: 1rem; }
 
 .swal2-container { font-family: 'Microsoft YaHei'; }
 .swal2-popup, .swal2-validation-message { background: #111 !important; }
 .swal2-header, .swal2-content, .swal2-footer { color: white !important; }
 .swal2-title { color: #CCC !important; }
 </style>{% endblock %}
-{% block head %} <script src="/static/js/jquery/3.5.1.js"></script>
+{% block head %}<link rel="preload" href="/static/js/jquery/mobile/images/icons-svg/edit-white.svg"/>
+<link rel="preload" href="/static/js/jquery/mobile/images/icons-svg/delete-white.svg"/>
+<script src="/static/js/jquery/3.5.1.js"></script>
 <script src="/static/js/jquery/form.js"></script>
 <script src="/static/js/sweetalert2-10.3.5.js"></script>{% endblock %}
 {% block nav %}<a href="/" title="首页">首页</a>{% endblock %}
@@ -50,15 +53,16 @@ td:nth-last-of-type(odd) { min-width: 7rem; }
 </form>
 <form id="update">
 	<div class="formDiv"><img id="closeUpdate" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" />
-		<h2>请填写要修改的信息</h2><input name="ID" type="hidden"/>
-		<div class="inputs"><label>姓名：<input name="Name" placeholder="请输入姓名" required type="text" /></label>
+		<h2>请修改信息</h2>
+		<div class="inputs"><label>ID：<input name="ID" type="text" required readonly />只读</label>
+			<label>姓名：<input name="Name" placeholder="请输入姓名" required type="text" /></label>
 			<label>性别：<input name="Sex" id="maleUpdate" type="radio" value="男" hidden /><label for="maleUpdate"
 					tabindex="0">男</label>
 				<input name="Sex" id="femaleUpdate" type="radio" value="女" hidden /><label for="femaleUpdate"
 					tabindex="0">女</label></label>
 			<label>学号：<input name="SID" placeholder="请输入学号" required type="number" min="1000000000"
 					max="9999999999" /></label></div>
-		<div class="buttons"><button type="reset">重置</button><button type="submit">添加</button></div>
+		<div class="buttons"><button type="button" id="resetUpdate">重置</button><button type="submit">修改</button></div>
 	</div>
 </form>
 <div id="students">
@@ -77,52 +81,56 @@ td:nth-last-of-type(odd) { min-width: 7rem; }
 			} else if (data.code === 2) {
 				$('table').html(''); $('#students').append('<div style="font-size:1.3rem">无数据！</div>');
 			} else {
-				$('table').html(''); Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning');
+				$('table').html(''); noLogin();
 			}
 		});
 	}
-	$('.editStudent').click(function(){
-		var self = $(this);
-		$('#update').css('top', '35%');
+	function sudo(success) {
+		return Swal.fire({
+			title: '敏感操作验证', text: '请输入此账户的密码：', input: 'password', inputAttributes: { required: 'required' },
+			icon: 'question', inputPlaceholder: '请输入此账户的密码', cancelButtonText: '取消',
+			showCancelButton: true, confirmButtonText: '验证', showLoaderOnConfirm: true, allowOutsideClick: e => !Swal.isLoading(),
+			preConfirm: Password => $.ajax('/sudo', { type: 'post', data: { Password } }).done(function (data) {
+				switch (data.code) {
+					case 0:
+						Swal.fire('成功', `${data.msg}30分钟内无需再次验证！`, 'success').then(success); break;
+					case 5:
+						Swal.fire('提示', data.msg, 'info').then(success); break;
+					case 7:
+						noLogin(); break;
+					default:
+						Swal.fire('失败', data.msg, 'error');
+				}
+			}).fail(function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire('验证失败！', '详细信息请见控制台！', 'error'); })
+		});
+	}
+	function noLogin() { return Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning'); }
+	function getAjaxConfig(url, info, inputsLength, success, sudoSuccess) {
+		return { url, type: 'post', dataType: 'json', success: function (data) {
+			switch (data.code) {
+				case 0: Swal.fire('成功', data.msg, 'success').then(success); break;
+				case 7: noLogin(); break;
+				case 8: sudo(sudoSuccess); break;
+				default: Swal.fire('失败', data.msg, 'error');
+			} }, error: function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire(info + '失败！', '详细信息请见控制台！', 'error');
+			}, beforeSubmit: function (arr) { console.log(arr); if (arr.length !== inputsLength) { Swal.fire('提示', '请选择性别！', 'warning'); return false; } }
+		};
+	}
+	$('table').on('click', '.editStudent', function(){
+		var self = $(this); $('#update [name="ID"]').val(self.data().id);
+		$('#update [name="Name"]').val(self.parent().parent().children()[1].innerHTML);
+		$(`#update [name="Sex"][value="${self.parent().parent().children()[2].innerHTML}"]`)[0].checked = true;
+		$('#update [name="SID"]').val(self.parent().parent().children()[3].innerHTML); $('#update').css('top', '35%');
+	});
+	$('table').on('click', '.removeStudent', function(){
+		var self = $(this); Swal.fire(self.data().id);
 	});
 	$('#closeUpdate').click(function () { $('#update').css('top', '-50rem'); });
 	$('#openAdd').click(function () { $('#insert').css('top', '35%'); });
 	$('#closeAdd').click(function () { $('#insert').css('top', '-50rem'); });
 	$('[for]').keydown(function (e) { if (e.keyCode === 13) { $('#' + $(this).attr('for'))[0].checked = true; } });
-	$('#insert').ajaxForm({
-		url: '/student/insert', type: 'post',
-		dataType: 'json', success: function (data, success, xhr, $form) {
-			console.log(data); console.log(success); console.log(xhr); console.log($form);
-			switch (data.code) {
-				case 0:
-					Swal.fire('成功', `${data.msg}`, 'success').then(getStudents); break;
-				case 7:
-					Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning'); break;
-				case 8:
-					Swal.fire({
-						title: '敏感操作验证', text: '请输入此账户的密码：', input: 'password', inputAttributes: { required: 'required' },
-						icon: 'question', inputPlaceholder: '请输入此账户的密码', cancelButtonText: '取消',
-						showCancelButton: true, confirmButtonText: '验证', showLoaderOnConfirm: true, allowOutsideClick: () => !Swal.isLoading(),
-						preConfirm: Password => $.ajax('/sudo', { type: 'post', data: { Password } }).done(function (data, success, xhr) {
-							switch (data.code) {
-								case 0:
-									Swal.fire('成功', `${data.msg}30分钟内无需再次验证！`, 'success'); break;
-								case 5:
-									Swal.fire('提示', data.msg, 'info'); break;
-								case 7:
-									Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning'); break;
-								default:
-									Swal.fire('失败', data.msg, 'error');
-							}
-						}).fail(function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire('验证失败！', '详细信息请见控制台！', 'error'); })
-					}); break;
-				default:
-					$form[0].reset();
-					Swal.fire('失败', data.msg, 'error');
-			}
-		}, error: function (xhr, error, text, $form) {
-			console.log(xhr); console.log(`${error}: ${text}`); console.log($form); Swal.fire('添加失败！', '详细信息请见控制台！', 'error');
-		}, beforeSubmit: function (arr, $form) { console.log(arr); console.log($form); if (arr.length !== 3) { Swal.fire('提示', '请选择性别！', 'warning'); return false; } }
-	});
+	$('#insert').ajaxForm(getAjaxConfig('/student/insert', '添加', 3, getStudents, function(){$('#insert [type="submit"]').click();}));
+	$('#update').ajaxForm(getAjaxConfig('/student/update', '修改', 4, getStudents, function(){$('#update [type="submit"]').click();}))
+	$('#resetUpdate').click(function(){ $(`.editStudent[data-id="${$('#update [name="ID"]').val()}"]`).click(); });
 	getStudents();
 </script>{% endblock %}

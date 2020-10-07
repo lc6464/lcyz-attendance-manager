@@ -58,15 +58,16 @@ def student_update():
 	if check.login(session):
 		if check.sudo(session):
 			data = request.form
-			if 'ID' in data and ('Name' in data or 'Sex' in data or 'SID' in data):
-				r = student.select('学号', data['SID'])
-				if len(r) != 0:
-					r = r[0]
-					return {'code': 5, 'msg': '学号为“%s”的%s同学“%s”已存在！'%(r[3], r[2], r[1])}
+			if 'ID' in data and 'Name' in data and 'Sex' in data and 'SID' in data:
+				r = student.select('ID', data['ID'])
+				if len(r) == 0:
+					return {'code': 2, 'msg': 'ID为“%s”的同学不存在！' % data['ID']}
 				else:
 					if re.match(r'.{2,10}', data['Name']) != None and data['Sex'] in ['男', '女'] and len(data['SID']) == 10:
-						r = student.insert(data['Name'], data['Sex'], data['SID'])[0]
-						return {'code': 0, 'msg': r'ID 为“%s”的“%s”同学添加成功！性别：%s，学号：%s。' % r}
+						student.update(data['ID'], '姓名', data['Name'])
+						student.update(data['ID'], '性别', data['Sex'])
+						r = student.update(data['ID'], '学号', data['SID'])[0]
+						return {'code': 0, 'msg': r'ID 为“%s”的“%s”同学修改成功！性别：%s，学号：%s。' % r}
 					else:
 						return {'code': 6, 'msg': '数据不合法！'}
 			else:
