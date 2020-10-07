@@ -33,7 +33,7 @@ def student_insert():
 				else:
 					if re.match(r'.{2,10}', data['Name']) != None and data['Sex'] in ['男', '女'] and len(data['SID']) == 10:
 						r = student.insert(data['Name'], data['Sex'], data['SID'])[0]
-						return {'code': 0, 'msg': r'ID 为“%s”的“%s”同学添加成功！性别：%s，学号：%s。' % r}
+						return {'code': 0, 'msg': 'ID 为“%s”的“%s”同学添加成功！性别：%s，学号：%s。' % r}
 					else:
 						return {'code': 6, 'msg': '数据不合法！'}
 			else:
@@ -47,8 +47,12 @@ def student_insert():
 @app.route('/student/get', methods=['GET'])
 def student_get_all():
 	if check.login(session):
-		r = student.search('ID', '%')
-		return {'code': 0, 'msg': '获取成功！', 'data': r} if len(r) != 0 else {'code': 2, 'msg': '无数据！'}
+		if 'SID' in request.args:
+			r = student.search('学号', request.args['SID'])
+			return {'code': 0, 'msg': '获取成功！', 'data': r[0]} if len(r) != 0 else {'code': 2, 'msg': '无数据！'}
+		else:
+			r = student.search('ID', '%')
+			return {'code': 0, 'msg': '获取成功！', 'data': r} if len(r) != 0 else {'code': 2, 'msg': '无数据！'}
 	else:
 		return {'code': 7, 'msg': '未登录！'}
 
@@ -67,9 +71,29 @@ def student_update():
 						student.update(data['ID'], '姓名', data['Name'])
 						student.update(data['ID'], '性别', data['Sex'])
 						r = student.update(data['ID'], '学号', data['SID'])[0]
-						return {'code': 0, 'msg': r'ID 为“%s”的“%s”同学修改成功！性别：%s，学号：%s。' % r}
+						return {'code': 0, 'msg': 'ID 为“%s”的“%s”同学修改成功！性别：%s，学号：%s。' % r}
 					else:
 						return {'code': 6, 'msg': '数据不合法！'}
+			else:
+				return {'code': 3, 'msg': '数据不合法！'}
+		else:
+			return {'code': 8, 'msg': '敏感操作验证！'}
+	else:
+		return {'code': 7, 'msg': '未登录！'}
+
+
+@app.route('/student/remove', methods=['POST'])
+def student_remove():
+	if check.login(session):
+		if check.sudo(session):
+			data = request.form
+			if 'ID' in data:
+				r = student.select('ID', data['ID'])
+				if len(r) == 0:
+					return {'code': 2, 'msg': 'ID为“%s”的同学不存在！' % data['ID']}
+				else:
+					r = student.delete(data['ID'])[0]
+					return {'code': 0, 'msg': '已删除 ID 为“%s”的“%s”同学！性别：%s，学号：%s。' % r}
 			else:
 				return {'code': 3, 'msg': '数据不合法！'}
 		else:
