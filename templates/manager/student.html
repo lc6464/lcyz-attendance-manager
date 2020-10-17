@@ -15,9 +15,8 @@ tr { border-top: 0.08rem solid white; } th, td { padding: 0.6rem 0.8rem; min-wid
 #update [name="ID"] { width: 8rem; margin-right: 1rem; } #htmlEscape { display: none; }
 .swal2-container { font-family: 'Microsoft YaHei'; } .swal2-popup, .swal2-validation-message { background: #111 !important; }
 .swal2-header, .swal2-content, .swal2-footer { color: white !important; } .swal2-title { color: #CCC !important; }</style>{% endblock %}
-{% block head %}<link rel="preload" href="/static/js/jquery/mobile/images/icons-svg/edit-white.svg"/>
-<link rel="preload" href="/static/js/jquery/mobile/images/icons-svg/delete-white.svg"/>
-<script src="/static/js/jquery/3.5.1.js"></script><script src="/static/js/jquery/form.js"></script><script src="/static/js/sweetalert2-10.3.5.js"></script>{% endblock %}
+{% block head %}<script src="/static/js/jquery/3.5.1.js"></script><script src="/static/js/jquery/form.js"></script><script src="/static/js/sweetalert2-10.3.5.js"></script>
+<script src="/static/js/alert.js"></script><script src="/static/js/tools.js"></script>{% endblock %}
 {% block nav %}<a href="/" title="首页">首页</a>{% endblock %}
 {% block header %}<h1>学生管理</h1>{% endblock %}
 {% block main %}<div id="controls"><button id="openAdd">添加学生</button><button id="search">查找学生</button></div>
@@ -37,61 +36,51 @@ tr { border-top: 0.08rem solid white; } th, td { padding: 0.6rem 0.8rem; min-wid
 <div id="students"><h2>学生列表</h2><table><thead><tr><th>ID</th><th>姓名</th><th>性别</th><th>学号</th><th>控制</th></tr></thead><tbody></tbody></table></div>
 <div id="htmlEscape"></div><script>
 function getStudents() {
-	$.ajax('/student/get').done(function(data){
-		if (data.code === 0) { $('tbody').html(''); $(data.data).each(function(){ $('tbody').append(`<tr><td>${this[0]}</td><td>${htmlEscape(this[1])}</td><td>${this[2]}</td>\
+	$.ajax('/student/get').done(function (data) {
+		if (data.code === 0) {
+			$('tbody').html(''); $(data.data).each(function () {
+				$('tbody').append(`<tr><td>${this[0]}</td><td>${htmlEscape(this[1])}</td><td>${this[2]}</td>\
 <td>${htmlEscape(this[3])}</td><td><img data-id="${this[0]}" class="editStudent" src="/static/js/jquery/mobile/images/icons-svg/edit-white.svg" alt="修改学生" title="修改此学生" />
 <img data-id="${this[0]}" class="removeStudent" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="删除学生" title="删除此学生" /></td></tr>`);
-		}); }
+			});
+		}
 		else if (data.code === 2) { $('table').html(''); $('#students').append('<div style="font-size:1.3rem">无数据！</div>'); } else { $('table').html(''); noLogin(); }
 	});
 }
-function sudo(success) { return Swal.fire({ title: '敏感操作验证', text: '请输入此账户的密码：', input: 'password', inputAttributes: { required: 'required' },
-	showCancelButton: true, confirmButtonText: '验证', icon: 'question', inputPlaceholder: '请输入此账户的密码', cancelButtonText: '取消', showLoaderOnConfirm: true,
-	allowOutsideClick: e => !Swal.isLoading(), preConfirm: Password => $.ajax('/sudo', { type: 'post', data: { Password } }).done(function (data) {
-		switch (data.code) {
-			case 0: Swal.fire('成功', `${htmlEscape(data.msg)}30分钟内无需再次验证！`, 'success').then(success); break;
-			case 5: Swal.fire('提示', htmlEscape(data.msg), 'info').then(success); break;
-			case 7: noLogin(); break; default: Swal.fire('失败', htmlEscape(data.msg), 'error');
-		} }).fail(function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire('验证失败！', '详细信息请见控制台！', 'error'); }) });
-}
-function noLogin() { return Swal.fire('您未登录', '<a href="/login?r=/student">点此去登录</a>', 'warning'); }
-function getAjaxConfig(url, info, inputsLength, success, sudoSuccess) { return { url, type: 'post', dataType: 'json', success: function (data) {
-	switch (data.code) { case 0: Swal.fire('成功', htmlEscape(data.msg), 'success').then(success); break; case 7: noLogin(); break; case 8: sudo(sudoSuccess); break;
-		default: Swal.fire('失败', htmlEscape(data.msg), 'error');
-	} }, error: function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire(info + '失败！', '详细信息请见控制台！', 'error');
-	}, beforeSubmit: function (arr) { console.log(arr); if (arr.length !== inputsLength) { Swal.fire('提示', '请选择性别！', 'warning'); return false; } } };
-}
-function htmlEscape(html) { var r = $('#htmlEscape').text(html).html(); $('#htmlEscape').html(''); return r; }
-$('table').on('click', '.editStudent', function(){ var self = $(this); $('#update [name="ID"]').val(self.data().id);
+$('table').on('click', '.editStudent', function () {
+	var self = $(this); $('#update [name="ID"]').val(self.data().id);
 	$('#update [name="Name"]').val(self.parent().parent().children()[1].innerText);
 	$(`#update [name="Sex"][value="${self.parent().parent().children()[2].innerText}"]`)[0].checked = true;
 	$('#update [name="SID"]').val(self.parent().parent().children()[3].innerText); $('#update').css('top', '35%');
 });
-$('table').on('click', '.removeStudent', function(){
+$('table').on('click', '.removeStudent', function () {
 	var self = $(this), ID = self.data().id;
-	Swal.fire({ title: '删除学生', text: `你确定要删除ID为${ID}的学生“${self.parent().parent().children()[1].innerText}”吗？`, icon: 'warning',
-		cancelButtonText: '取消', showCancelButton: true, confirmButtonText: '确定' }).then(function(e){ if (e.isConfirmed) {
-		$.ajax('/student/remove', { type: 'post', data: { ID } }).done(function(data){
-			switch (data.code) {
-				case 0: Swal.fire('成功', htmlEscape(data.msg), 'success').then(getStudents); break;
-				case 7: noLogin(); break;
-				case 8: sudo(function(){ $(`.removeStudent[data-id="${ID}"]`).click(); }); break;
-				default: Swal.fire('失败', htmlEscape(data.msg), 'error');
-			} }).fail(function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire('删除失败！', '详细信息请见控制台！', 'error'); }); } });
+	Swal.fire({
+		title: '删除学生', text: `你确定要删除ID为${ID}的学生 ${self.parent().parent().children()[1].innerText} 吗？`, icon: 'warning',
+		cancelButtonText: '取消', showCancelButton: true, confirmButtonText: '确定'
+	}).then(function (e) {
+		if (e.isConfirmed) {
+			$.ajax('/student/remove', { type: 'post', data: { ID } }).done(function (data) {
+				switch (data.code) {
+					case 0: Swal.fire('成功', htmlEscape(data.msg), 'success').then(getStudents); break;
+					case 7: noLogin(); break;
+					case 8: sudo(function () { $(`.removeStudent[data-id="${ID}"]`).click(); }); break;
+					default: Swal.fire('失败', htmlEscape(data.msg), 'error');
+				}
+			}).fail(function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire('删除失败！', '详细信息请见控制台！', 'error'); });
+		}
+	});
 });
 $('#closeUpdate').click(function () { $('#update').css('top', '-50rem'); });
 $('#openAdd').click(function () { $('#insert').css('top', '35%'); });
 $('#closeAdd').click(function () { $('#insert').css('top', '-50rem'); });
 $('[for]').keydown(function (e) { if (e.keyCode === 13) { $('#' + $(this).attr('for'))[0].checked = true; } });
-$('#insert').ajaxForm(getAjaxConfig('/student/insert', '添加', 3, getStudents, function(){$('#insert [type="submit"]').click();}));
-$('#update').ajaxForm(getAjaxConfig('/student/update', '修改', 4, getStudents, function(){$('#update [type="submit"]').click();}))
-$('#resetUpdate').click(function(){ $(`.editStudent[data-id="${$('#update [name="ID"]').val()}"]`).click(); });
-$('#search').click(function(){
-	Swal.fire({ title: '查询学生', text: '请输入要查询的学生的学号：', input: 'number', inputAttributes: { required: 'required', min: 1000000000, max: 9999999999 },
-		icon: 'question', inputPlaceholder: '请输入学生的学号', cancelButtonText: '取消', showCancelButton: true, confirmButtonText: '查询', showLoaderOnConfirm: true,
-		allowOutsideClick: e => !Swal.isLoading(), preConfirm: SID => $.ajax('/student/get', { data: { SID } }).done(function (data) {
-			if (data.code === 0) { var d = data.data;
-				Swal.fire('已查询到数据', `ID: ${d[0]}<br/>姓名：${htmlEscape(d[1])}<br/>性别：${d[2]}<br/>学号：${htmlEscape(SID)}`, 'success');
-			} else if (data.code === 2) { Swal.fire('未查询到数据', htmlEscape(data.msg), 'error'); } else { noLogin(); }
-		}).fail(function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire('验证失败！', '详细信息请见控制台！', 'error'); }) });
-});getStudents();</script>{% endblock %}
+$('#insert').ajaxForm(getAjaxConfig('/student/insert', '添加', 3, getStudents, function () { $('#insert [type="submit"]').click(); }));
+$('#update').ajaxForm(getAjaxConfig('/student/update', '修改', 4, getStudents, function () { $('#update [type="submit"]').click(); }))
+$('#resetUpdate').click(function () { $(`.editStudent[data-id="${$('#update [name="ID"]').val()}"]`).click(); });
+$('#search').click(function () {
+	inputAjax('查询学生', '请输入要查询的学生的学号：', 'number', { required: 'required', min: 1000000000, max: 9999999999 }, '请输入学生的学号', '查询', '/student/get', 'get', 'SID',
+		function (data) { var d = data.data[0]; Swal.fire('已查询到数据', `ID：${d[0]}<br/>姓名：${htmlEscape(d[1])}<br/>性别：${d[2]}<br/>学号：${htmlEscape(d[3])}`, 'success'); },
+		function (data, code) { if (code === 2) { Swal.fire('未查询到数据', htmlEscape(data.msg), 'error'); } }, '查询失败！');
+}); getStudents();
+</script>{% endblock %}

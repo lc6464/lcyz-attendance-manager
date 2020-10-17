@@ -29,11 +29,11 @@ def student_insert():
 				r = student.select('学号', data['SID'])
 				if len(r) != 0:
 					r = r[0]
-					return {'code': 5, 'msg': '学号为“%s”的%s同学“%s”已存在！'%(r[3], r[2], r[1])}
+					return {'code': 5, 'msg': '学号为%s的%s同学 %s 已存在！'%(r[3], r[2], r[1])}
 				else:
 					if re.match(r'.{2,10}', data['Name']) != None and data['Sex'] in ['男', '女'] and len(data['SID']) == 10:
 						r = student.insert(data['Name'], data['Sex'], data['SID'])[0]
-						return {'code': 0, 'msg': 'ID 为“%s”的“%s”同学添加成功！性别：%s，学号：%s。' % r}
+						return {'code': 0, 'msg': '%s 同学添加成功！\\r\\nID：%s\\r\\n性别：%s\\r\\n学号：%s' % (r[1], r[0], r[2], r[3])}
 					else:
 						return {'code': 6, 'msg': '数据不合法！'}
 			else:
@@ -49,7 +49,7 @@ def student_get_all():
 	if check.login(session):
 		if 'SID' in request.args:
 			r = student.search('学号', request.args['SID'])
-			return {'code': 0, 'msg': '获取成功！', 'data': r[0]} if len(r) != 0 else {'code': 2, 'msg': '无数据！'}
+			return {'code': 0, 'msg': '获取成功！', 'data': r} if len(r) != 0 else {'code': 2, 'msg': '无数据！'}
 		else:
 			r = student.search('ID', '%')
 			return {'code': 0, 'msg': '获取成功！', 'data': r} if len(r) != 0 else {'code': 2, 'msg': '无数据！'}
@@ -65,13 +65,13 @@ def student_update():
 			if 'ID' in data and 'Name' in data and 'Sex' in data and 'SID' in data:
 				r = student.select('ID', data['ID'])
 				if len(r) == 0:
-					return {'code': 2, 'msg': 'ID为“%s”的同学不存在！' % data['ID']}
+					return {'code': 2, 'msg': 'ID为%s的同学不存在！' % data['ID']}
 				else:
 					if re.match(r'.{2,10}', data['Name']) != None and data['Sex'] in ['男', '女'] and len(data['SID']) == 10:
 						student.update(data['ID'], '姓名', data['Name'])
 						student.update(data['ID'], '性别', data['Sex'])
 						r = student.update(data['ID'], '学号', data['SID'])[0]
-						return {'code': 0, 'msg': 'ID 为“%s”的“%s”同学修改成功！性别：%s，学号：%s。' % r}
+						return {'code': 0, 'msg': '%s 同学修改成功！\\r\\nID：%s\\r\\n性别：%s\\r\\n学号：%s' % (r[1], r[0], r[2], r[3])}
 					else:
 						return {'code': 6, 'msg': '数据不合法！'}
 			else:
@@ -90,10 +90,10 @@ def student_remove():
 			if 'ID' in data:
 				r = student.select('ID', data['ID'])
 				if len(r) == 0:
-					return {'code': 2, 'msg': 'ID为“%s”的同学不存在！' % data['ID']}
+					return {'code': 2, 'msg': 'ID为%s的同学不存在！' % data['ID']}
 				else:
 					r = student.delete(data['ID'])[0]
-					return {'code': 0, 'msg': '已删除 ID 为“%s”的“%s”同学！性别：%s，学号：%s。' % r}
+					return {'code': 0, 'msg': '已删除 %s 同学！\\r\\nID：%s\\r\\n性别：%s\\r\\n学号：%s' % (r[1], r[0], r[2], r[3])}
 			else:
 				return {'code': 3, 'msg': '数据不合法！'}
 		else:
