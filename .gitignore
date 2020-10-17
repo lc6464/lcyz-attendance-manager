@@ -133,3 +133,6 @@ dmypy.json
 
 # database
 # database.db
+
+# Batch
+batch/
