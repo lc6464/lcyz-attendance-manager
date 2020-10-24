@@ -7,7 +7,7 @@ import re, check
 
 
 @app.route('/student/get', methods=['GET'])
-def student_get_all():
+def get_students():
 	if check.login(session):
 		if 'SID' in request.args:
 			r = student.search('学号', request.args['SID'])

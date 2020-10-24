@@ -1,7 +1,7 @@
-debug = True
+debug = False
 host = 'localhost'
 port = 5000
-database = 'database.db'
+database = 'data.db'
 secret_key = 'dev'
 session_lifttime = 15
 cache_max_age = 300

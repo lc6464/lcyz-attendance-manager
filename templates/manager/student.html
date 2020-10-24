@@ -36,15 +36,16 @@ tr { border-top: 0.08rem solid white; } th, td { padding: 0.6rem 0.8rem; min-wid
 <div id="students"><h2>学生列表</h2><table><thead><tr><th>ID</th><th>姓名</th><th>性别</th><th>学号</th><th>控制</th></tr></thead><tbody></tbody></table></div>
 <div id="htmlEscape"></div><script>
 function getStudents() {
-	$.ajax('/student/get').done(function (data) {
+	return $.ajax('/student/get').done(function (data) {
 		if (data.code === 0) {
-			$('tbody').html(''); $(data.data).each(function () {
+			$('table').html('<thead><tr><th>ID</th><th>姓名</th><th>性别</th><th>学号</th><th>控制</th></tr></thead><tbody></tbody>');
+			$('#no-data').remove(); $(data.data).each(function () {
 				$('tbody').append(`<tr><td>${this[0]}</td><td>${htmlEscape(this[1])}</td><td>${this[2]}</td>\
 <td>${htmlEscape(this[3])}</td><td><img data-id="${this[0]}" class="editStudent" src="/static/js/jquery/mobile/images/icons-svg/edit-white.svg" alt="修改学生" title="修改此学生" />
 <img data-id="${this[0]}" class="removeStudent" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="删除学生" title="删除此学生" /></td></tr>`);
 			});
-		}
-		else if (data.code === 2) { $('table').html(''); $('#students').append('<div style="font-size:1.3rem">无数据！</div>'); } else { $('table').html(''); noLogin(); }
+		} else if (data.code === 2) { $('table').html(''); $('#students').append('<div id="no-data" style="font-size:1.3rem">无数据！</div>'); }
+		else { $('table').html(''); noLogin(); }
 	});
 }
 $('table').on('click', '.editStudent', function () {
