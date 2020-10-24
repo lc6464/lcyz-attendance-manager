@@ -131,8 +131,8 @@ dmypy.json
 # VSCode
 .vscode/
 
-# database
-# database.db
+# Database
+*.db
 
 # Batch
 batch/
