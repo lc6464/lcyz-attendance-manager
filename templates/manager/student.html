@@ -60,7 +60,7 @@ $('table').on('click', '.removeStudent', function () {
 		cancelButtonText: '取消', showCancelButton: true, confirmButtonText: '确定'
 	}).then(function (e) {
 		if (e.isConfirmed) {
-			$.ajax('/student/remove', { type: 'post', data: { ID } }).done(function (data) {
+			$.ajax('?type=remove', { type: 'post', data: { ID } }).done(function (data) {
 				switch (data.code) {
 					case 0: Swal.fire('成功', htmlEscape(data.msg), 'success').then(getStudents); break;
 					case 7: noLogin(); break;
@@ -75,8 +75,8 @@ $('#closeUpdate').click(function () { $('#update').css('top', '-50rem'); });
 $('#openAdd').click(function () { $('#insert').css('top', '35%'); });
 $('#closeAdd').click(function () { $('#insert').css('top', '-50rem'); });
 $('[for]').keydown(function (e) { if (e.keyCode === 13) { $('#' + $(this).attr('for'))[0].checked = true; } });
-$('#insert').ajaxForm(getAjaxConfig('/student/insert', '添加', 3, getStudents, function () { $('#insert [type="submit"]').click(); }));
-$('#update').ajaxForm(getAjaxConfig('/student/update', '修改', 4, getStudents, function () { $('#update [type="submit"]').click(); }))
+$('#insert').ajaxForm(getAjaxConfig('?type=insert', '添加', 3, getStudents, function () { $('#insert [type="submit"]').click(); }));
+$('#update').ajaxForm(getAjaxConfig('?type=update', '修改', 4, getStudents, function () { $('#update [type="submit"]').click(); }))
 $('#resetUpdate').click(function () { $(`.editStudent[data-id="${$('#update [name="ID"]').val()}"]`).click(); });
 $('#search').click(function () {
 	inputAjax('查询学生', '请输入要查询的学生的学号：', 'number', { required: 'required', min: 1000000000, max: 9999999999 }, '请输入学生的学号', '查询', '/student/get', 'get', 'SID',

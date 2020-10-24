@@ -2,7 +2,6 @@ from sys import path
 path.append('..')
 from app import app
 from flask import send_file
-import check
 
 @app.errorhandler(404)
 def not_found(e):
