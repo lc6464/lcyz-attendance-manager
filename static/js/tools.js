@@ -10,9 +10,9 @@ function sudo(success, noLoginRedirect) {
 		}
 	}, '验证失败！', noLoginRedirect);
 }
-function getAjaxConfig(url, info, inputsLength, success, sudoSuccess) { return { url, type: 'post', dataType: 'json', success: function (data) {
+function getAjaxConfig(url, info, inputsLength, inputsLengthError, success, sudoSuccess) { return { url, type: 'post', dataType: 'json', success: function (data) {
 	switch (data.code) { case 0: Swal.fire('成功', htmlEscape(data.msg), 'success').then(success); break; case 7: noLogin(); break; case 8: sudo(sudoSuccess); break;
 		default: Swal.fire('失败', htmlEscape(data.msg), 'error');
 	} }, error: function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire(info + '失败！', '详细信息请见控制台！', 'error');
-	}, beforeSubmit: function (arr) { console.log(arr); if (arr.length !== inputsLength) { Swal.fire('提示', '请选择性别！', 'warning'); return false; } } };
+	}, beforeSubmit: function (arr) { console.log(arr); if (arr.length !== inputsLength) { Swal.fire('提示', inputsLengthError, 'warning'); return false; } } };
 }

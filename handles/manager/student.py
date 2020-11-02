@@ -1,7 +1,5 @@
-from sys import path
-path.append('..')
-from handles.error import app
-from database import student, information, attendance, account
+from handles.manager.account import app
+from database import student
 from flask import session, request
 import re, check
 

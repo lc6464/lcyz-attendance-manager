@@ -1,0 +1,40 @@
+{% extends "layout.html" %}{% block title %}账号管理{% endblock %}
+{% block css %}<style>header h1 { font-size: 2.5rem; margin: 1rem 0; } @media (max-width: 295px) { body::before { height: 6rem; } }
+form { text-align: center; } .formDiv { background: #353535; display: inline-block; padding: 1.2rem 1.5rem 2rem; }
+label { display: block; margin: 0.7rem 0; font-size: 1.2rem; } label label { display: inline; margin: 0; font-size: 1.3rem; } .inputs { margin: 1.6rem 0; }
+.buttons button { padding: 0.3rem 0.8rem; font-size: 1.15rem; } .buttons button:first-of-type { margin-right: 1.5rem; }
+[type='radio']+label::before { content: '-'; color: rgba(0, 0, 0, 0); border-radius: 50%;
+	display: inline-block; width: 1.3rem; height: 1.3rem; border: 0.1rem solid #0AF; }
+[type='radio']:checked+label::before { background: #0AF; } label label:first-of-type { margin: 0 0.4rem; }
+#changePassword, #newAccount { position: fixed; transform: translate(-50%, -50%); left: 50%; top: -50rem; transition: 0.5s top; z-index: 110; }
+#closeChangePassword, #closeNewPassword { width: 1rem; height: 1rem; display: inline-block; cursor: pointer; position: absolute; top: 1.2rem; right: 1.2rem; }
+#controls { text-align: center; } #controls button:not(:first-of-type) { margin-left: 2rem; }
+#htmlEscape { display: none; }
+.swal2-container { font-family: 'Microsoft YaHei'; } .swal2-popup, .swal2-validation-message { background: #111 !important; }
+.swal2-header, .swal2-content, .swal2-footer { color: white !important; } .swal2-title { color: #CCC !important; }</style>{% endblock %}
+{% block head %}<script src="/static/js/jquery/3.5.1.js"></script><script src="/static/js/jquery/form.js"></script><script src="/static/js/sweetalert2-10.3.5.js"></script>
+<script src="/static/js/alert.js"></script><script src="/static/js/tools.js"></script>{% endblock %}
+{% block nav %}<a href="/" title="首页">首页</a>{% endblock %}
+{% block header %}<h1>账号管理</h1>{% endblock %}
+{% block main %}<div id="controls"><button id="openChangePassword">修改密码</button><button id="openNewAccount">新建账户</button><button id="search">查找账号</button></div>
+<form id="changePassword"><div class="formDiv"><img id="closeChangePassword" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" /><h2>修改密码</h2>
+<div class="inputs"><label>旧密码：<input name="Password" placeholder="请输入旧密码" required type="password"/></label>
+	<label>新密码：<input name="NewPassword" placeholder="请输入新密码" required type="password"/></label></div>
+<div class="buttons"><button type="reset">重置</button><button type="submit">修改</button></div></div></form>
+<form id="newAccount"><div class="formDiv"><img id="closeNewAccount" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" /><h2>新建账户</h2>
+	<div class="inputs"><label>密码：<input name="Password" placeholder="请输入当前账户密码" required type="password"/></label>
+		<label>新账户名：<input name="NewAccount" placeholder="请输入新账户的用户名" required type="text"/></label>
+		<label>新账户密码：<input name="NewPassword" placeholder="请输入新账户的密码" required type="password"/></label></div>
+	<div class="buttons"><button type="reset">重置</button><button type="submit">创建</button></div></div></form>
+<div id="htmlEscape"></div><script>
+$('#openChangePassword').click(function () { $('#changePassword').css('top', '35%'); });
+$('#closeChangePassword').click(function () { $('#changePassword').css('top', '-50rem'); });
+$('#openNewAccount').click(function () { $('#newAccount').css('top', '35%'); });
+$('#closeNewAccount').click(function () { $('#newAccount').css('top', '-50rem'); });
+$('#changePassword').ajaxForm(getAjaxConfig('?type=changePassword', '修改', 2, '请完整填写表单！', e => location.reload(), function () { $('#changePassword [type="submit"]').click(); }));
+$('#newAccount').ajaxForm(getAjaxConfig('?type=newAccount', '创建', 3, '请完整填写表单！', e => {}, function () { $('#newAccount [type="submit"]').click(); }));
+$('#search').click(function () {
+	inputAjax('查询账户', '请输入要查询的账户的名称：', 'text', { required: 'required' }, '请输入账户名称', '查询', '/account/get', 'get', 'Account',
+		function (data) { Swal.fire('已查询到数据', htmlEscape(data.msg), 'success'); },
+		function (data, code) { if (code === 2) { Swal.fire('未查询到数据', htmlEscape(data.msg), 'error'); } }, '查询失败！');
+}); </script>{% endblock %}

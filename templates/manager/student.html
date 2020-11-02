@@ -76,12 +76,11 @@ $('#closeUpdate').click(function () { $('#update').css('top', '-50rem'); });
 $('#openAdd').click(function () { $('#insert').css('top', '35%'); });
 $('#closeAdd').click(function () { $('#insert').css('top', '-50rem'); });
 $('[for]').keydown(function (e) { if (e.keyCode === 13) { $('#' + $(this).attr('for'))[0].checked = true; } });
-$('#insert').ajaxForm(getAjaxConfig('?type=insert', '添加', 3, getStudents, function () { $('#insert [type="submit"]').click(); }));
-$('#update').ajaxForm(getAjaxConfig('?type=update', '修改', 4, getStudents, function () { $('#update [type="submit"]').click(); }))
+$('#insert').ajaxForm(getAjaxConfig('?type=insert', '添加', 3, '请选择性别！', getStudents, function () { $('#insert [type="submit"]').click(); }));
+$('#update').ajaxForm(getAjaxConfig('?type=update', '修改', 4, '请选择性别！', getStudents, function () { $('#update [type="submit"]').click(); }))
 $('#resetUpdate').click(function () { $(`.editStudent[data-id="${$('#update [name="ID"]').val()}"]`).click(); });
 $('#search').click(function () {
 	inputAjax('查询学生', '请输入要查询的学生的学号：', 'number', { required: 'required', min: 1000000000, max: 9999999999 }, '请输入学生的学号', '查询', '/student/get', 'get', 'SID',
 		function (data) { var d = data.data[0]; Swal.fire('已查询到数据', `ID：${d[0]}<br/>姓名：${htmlEscape(d[1])}<br/>性别：${d[2]}<br/>学号：${htmlEscape(d[3])}`, 'success'); },
 		function (data, code) { if (code === 2) { Swal.fire('未查询到数据', htmlEscape(data.msg), 'error'); } }, '查询失败！');
-}); getStudents();
-</script>{% endblock %}
+}); getStudents();</script>{% endblock %}
