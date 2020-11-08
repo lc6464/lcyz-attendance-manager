@@ -13,6 +13,7 @@ def login(session):
 				return True
 	session.pop('user', None)
 	session.pop('password', None)
+	session.pop('sudo', None)
 	return False
 
 def sudo(session):

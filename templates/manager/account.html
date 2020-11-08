@@ -7,16 +7,12 @@ label { display: block; margin: 0.7rem 0; font-size: 1.2rem; } label label { dis
 	display: inline-block; width: 1.3rem; height: 1.3rem; border: 0.1rem solid #0AF; }
 [type='radio']:checked+label::before { background: #0AF; } label label:first-of-type { margin: 0 0.4rem; }
 #changePassword, #newAccount { position: fixed; transform: translate(-50%, -50%); left: 50%; top: -50rem; transition: 0.5s top; z-index: 110; }
-#closeChangePassword, #closeNewPassword { width: 1rem; height: 1rem; display: inline-block; cursor: pointer; position: absolute; top: 1.2rem; right: 1.2rem; }
-#controls { text-align: center; } #controls button:not(:first-of-type) { margin-left: 2rem; }
-#htmlEscape { display: none; }
-.swal2-container { font-family: 'Microsoft YaHei'; } .swal2-popup, .swal2-validation-message { background: #111 !important; }
-.swal2-header, .swal2-content, .swal2-footer { color: white !important; } .swal2-title { color: #CCC !important; }</style>{% endblock %}
-{% block head %}<script src="/static/js/jquery/3.5.1.js"></script><script src="/static/js/jquery/form.js"></script><script src="/static/js/sweetalert2-10.3.5.js"></script>
-<script src="/static/js/alert.js"></script><script src="/static/js/tools.js"></script>{% endblock %}
-{% block nav %}<a href="/" title="首页">首页</a>{% endblock %}
-{% block header %}<h1>账号管理</h1>{% endblock %}
-{% block main %}<div id="controls"><button id="openChangePassword">修改密码</button><button id="openNewAccount">新建账户</button><button id="search">查找账号</button></div>
+#closeChangePassword, #closeNewAccount { width: 1rem; height: 1rem; display: inline-block; cursor: pointer; position: absolute; top: 1.2rem; right: 1.2rem; }
+#controls { text-align: center; } #controls button:not(:first-of-type) { margin-left: 2rem; } #htmlEscape { display: none; }</style>{% endblock %}
+{% block head %}<script src="/static/js/jquery/form.js"></script><script src="/static/js/alert.js"></script><script src="/static/js/tools.js"></script>{% endblock %}
+{% block nav %}<a href="/" title="首页">首页</a>{% endblock %}{% block header %}<h1>账号管理</h1>{% endblock %}
+{% block main %}<div id="controls"><button id="openChangePassword">修改密码</button><button id="openNewAccount">新建账户</button><button id="search">查找账号</button>
+<button id="logout">退出登录</button><button id="remove">删除账户</button></div>
 <form id="changePassword"><div class="formDiv"><img id="closeChangePassword" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" /><h2>修改密码</h2>
 <div class="inputs"><label>旧密码：<input name="Password" placeholder="请输入旧密码" required type="password"/></label>
 	<label>新密码：<input name="NewPassword" placeholder="请输入新密码" required type="password"/></label></div>
@@ -27,6 +23,7 @@ label { display: block; margin: 0.7rem 0; font-size: 1.2rem; } label label { dis
 		<label>新账户密码：<input name="NewPassword" placeholder="请输入新账户的密码" required type="password"/></label></div>
 	<div class="buttons"><button type="reset">重置</button><button type="submit">创建</button></div></div></form>
 <div id="htmlEscape"></div><script>
+var toLogin = e => setTimeout(u => location.href = u, 30, '/login?r=/account');
 $('#openChangePassword').click(function () { $('#changePassword').css('top', '35%'); });
 $('#closeChangePassword').click(function () { $('#changePassword').css('top', '-50rem'); });
 $('#openNewAccount').click(function () { $('#newAccount').css('top', '35%'); });
@@ -37,4 +34,35 @@ $('#search').click(function () {
 	inputAjax('查询账户', '请输入要查询的账户的名称：', 'text', { required: 'required' }, '请输入账户名称', '查询', '/account/get', 'get', 'Account',
 		function (data) { Swal.fire('已查询到数据', htmlEscape(data.msg), 'success'); },
 		function (data, code) { if (code === 2) { Swal.fire('未查询到数据', htmlEscape(data.msg), 'error'); } }, '查询失败！');
-}); </script>{% endblock %}
+});
+$('#logout').click(function () {
+	Swal.fire({ title: '退出登录', text: `你确定要退出登录吗？`, icon: 'warning', cancelButtonText: '取消', showCancelButton: true, confirmButtonText: '确定' }).then(function (e) {
+		if (e.isConfirmed) {
+			$.ajax('/logout').done(function (data) {
+				switch (data.code) {
+					case 0: Swal.fire('成功', htmlEscape(data.msg), 'success').then(toLogin); break;
+					case 5: Swal.fire('提示', htmlEscape(data.msg), 'info').then(toLogin); break;
+					default: Swal.fire('失败', htmlEscape(data.msg), 'error');
+				}
+			}).fail(function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire('退出登录失败！', '详细信息请见控制台！', 'error'); });
+		}
+	});
+});
+$('#remove').click(function () {
+	Swal.fire({ title: '删除账户', html: `你确定要删除账户吗？<br/><b style="color:red">删除后账户将永久无法找回！</b>`, icon: 'warning',
+	cancelButtonText: '取消', showCancelButton: true, confirmButtonText: '确定' }).then(function (e) {
+		if (e.isConfirmed) {
+			inputAjax('<b style="color:red">删除账户验证</b>', '请输入此账户的密码：', 'password',
+			{ required: 'required' }, '请输入此账户的密码', '验证', '?type=removeAccount', 'post', 'Password', function (data) {
+				Swal.fire('成功', htmlEscape(data.msg), 'success').then(toLogin);
+			}, function (data, code) {
+				if (code === 2) {
+					Swal.fire('失败', htmlEscape(data.msg), 'error').then(toLogin);
+				} else {
+					Swal.fire('失败', htmlEscape(data.msg), 'error');
+				}
+			}, '验证失败！', '/login?r=/account');
+		}
+	});
+});
+</script>{% endblock %}

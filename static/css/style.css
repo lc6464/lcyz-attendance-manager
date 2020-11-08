@@ -32,3 +32,6 @@ nav {
 #navLinks a { line-height: 3rem; font-size: 1.6rem; padding: 0 0.4rem; text-decoration: underline; }
 
 header h1 { text-align: center; }
+
+.swal2-container { font-family: 'Microsoft YaHei'; } .swal2-popup, .swal2-validation-message { background: #111 !important; }
+.swal2-header, .swal2-content, .swal2-footer { color: white !important; } .swal2-title { color: #CCC !important; }

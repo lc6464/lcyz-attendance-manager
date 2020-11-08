@@ -1,5 +1,5 @@
 {% extends "layout.html" %}{% block title %}登录{% endblock %}
-{% block head %}<script src="/static/js/jquery/3.5.1.js"></script><script src="/static/js/jquery/form.js"></script>{% endblock %}
+{% block head %}<script src="/static/js/jquery/form.js"></script>{% endblock %}
 {% block css %}<style>
 form { text-align: center; }
 #formDiv { background: rgba(255, 255, 255, 0.03); display: inline-block; padding: 1.2rem 1.5rem 2rem; }
@@ -13,13 +13,13 @@ button:first-of-type { margin-right: 1.5rem; }
 {% block main %}<div><form><div id="formDiv"><h2>请输入账号和密码</h2>
 	<div id="inputs"><label>账号：<input name="User" placeholder="请输入账号" required type="text"/></label>
 		<label>密码：<input name="Password" placeholder="请输入密码" required type="password"/></label></div>
-	<div id="buttons"><button type="reset">重置</button><button type="submit">{% block smText %}登录{% endblock %}</button></div>
+	<div id="buttons"><button type="reset">重置</button><button type="submit">{% block text %}登录{% endblock %}</button></div>
 </div></form><script>var timeout = { alert: function(msg, time){ return setTimeout(alert, time, msg); } }; $('form').ajaxForm({ type: 'post', dataType: 'json',
 	success: function (data, success, xhr, $form) { console.log(data); console.log(success); console.log(xhr); console.log($form);
-		if (data.code === 0) { timeout.alert(`${data.msg}`, 25); setTimeout(e => location.href = e, 30, '{{ redirect }}'); }
-		else if (data.code === 5) { timeout.alert(`{% block reloadText %}登录{% endblock %}失败！\r\n${data.msg}`, 25); setTimeout(e => location.reload(), 30); }
-		else { $form[0].reset(); timeout.alert(`{% block failText %}登录{% endblock %}失败！\r\n${data.msg}`, 25); }
+		if (data.code === 0) { Swal.fire('成功', data.msg, 'success').then(e => setTimeout(u => location.href = u, 30, '{{ redirect }}')); }
+		else if (data.code === 5) { Swal.fire('提示', data.msg, 'info').then(e => setTimeout(u => location.href = u, 30, '{{ redirect }}')); }
+		else { $form[0].reset(); Swal.fire('失败', data.msg, 'error'); }
 	}, error: function (xhr, error, text, $form) {
-		console.log(xhr); console.log(`${error}: ${text}`); console.log($form); timeout.alert('发生错误，{% block errorText %}登录{% endblock %}失败！\r\n详细信息请见控制台！', 25);
+		console.log(xhr); console.log(`${error}: ${text}`); console.log($form); Swal.fire('发生错误，{% block errorText %}登录{% endblock %}失败！', '详细信息请见控制台！', 'error');
 	}, beforeSubmit: function (arr, $form) { console.log(arr); console.log($form); }
 });</script></div>{% endblock %}

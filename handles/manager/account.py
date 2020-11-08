@@ -16,6 +16,18 @@ def get_account():
 	else:
 		return {'code': 7, 'msg': '未登录！'}
 
+
+@app.route('/logout', methods=['GET'])
+def logout():
+	if check.login(session):
+		session.pop('user', None)
+		session.pop('password', None)
+		session.pop('sudo', None)
+		return {'code': 0, 'msg': '退出登录成功！'}
+	else:
+		return {'code': 5, 'msg': '未登录！无需退出登录！'}
+
+
 @app.route('/account', methods=['POST'])
 def account_manage():
 	if check.login(session):
@@ -43,7 +55,24 @@ def account_manage():
 						r = r[0]
 						if data['Password'] == r[2]:
 							account.insert(data['NewAccount'], data['NewPassword'])
-							return {'code': 0, 'msg': '创建账户%s成功！'%data['NewAccount']}
+							return {'code': 0, 'msg': '创建账户 %s 成功！' % data['NewAccount']}
+						else:
+							return {'code': 1, 'msg': '当前账户密码错误！'}
+					else:
+						return {'code': 2, 'msg': '当前账户不存在！'}
+				else:
+					return {'code': 3, 'msg': '数据不合法！'}
+			elif t == 'removeAccount':
+				if 'Password' in data:
+					r = account.select('名称', session['user'])
+					if len(r) != 0:
+						r = r[0]
+						if data['Password'] == r[2]:
+							account.delete(r[0])
+							session.pop('user', None)
+							session.pop('password', None)
+							session.pop('sudo', None)
+							return {'code': 0, 'msg': '删除账户 %s 成功！' % r[1]}
 						else:
 							return {'code': 1, 'msg': '当前账户密码错误！'}
 					else:
