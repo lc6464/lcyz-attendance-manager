@@ -1,0 +1,67 @@
+{% extends "layout.html" %}{% block title %}查看记录{% endblock %}
+{% block css %}<style>header h1 { font-size: 2.5rem; margin: 1rem 0; } @media (max-width: 295px) { body::before { height: 6rem; } }
+#controls, #records { text-align: center; }
+#records h2 { font-size: 1.6rem; } table { margin: 0 auto; text-align: center; border-collapse: collapse; font-family: 'Microsoft YaHei'; }
+tr { border-top: 0.08rem solid white; } th, td { padding: 0.6rem 0.8rem; min-width: 3rem; } td:nth-of-type(even) { min-width: 8rem; }
+#htmlEscape { display: none; }</style>{% endblock %}
+{% block head %}<script src="/static/js/jquery/form.js"></script><script src="/static/js/alert.js"></script><script src="/static/js/tools.js"></script>{% endblock %}
+{% block nav %}<a href="/" title="首页">首页</a>{% endblock %}{% block header %}<h1>查看记录</h1>{% endblock %}
+{% block main %}<div id="controls"><button id="search">查找</button></div>
+<div id="records"><h2>记录列表</h2><table><thead><tr><th>ID</th><th>学号</th><th>时间</th><th>状态</th></tr></thead><tbody></tbody></table></div>
+<div id="htmlEscape"></div><script>
+var students = $.ajax('/student/get',{async:false}).responseJSON.data;
+function getRecord() {
+	return $.ajax('get').done(function (data) {
+		if (data.code === 0) {
+			$('table').html('<thead><tr><th>ID</th><th>学号</th><th>时间</th><th>状态</th></tr></thead><tbody></tbody>');
+			$('#no-data').remove(); $(data.data).each(function(){
+                var self = this;
+                $(students).each(function(){
+                    if (this[3] === self[1]) {
+                        var name = this[1],
+                            time = new Date(self[2]),
+                            status = {i: '签到', o: '签退'}[self[3]];
+                            $('tbody').append(`<tr><td>${self[0]}</td><td>${name}</td><td>${time}</td><td>${status}</td></tr>`);
+                    }
+                });
+			});
+		} else if (data.code === 2) { $('table').html(''); $('#students').append('<div id="no-data" style="font-size:1.3rem">无数据！</div>'); }
+		else { $('table').html(''); noLogin(); }
+	});
+}
+$('table').on('click', '.editStudent', function () {
+	var self = $(this); $('#update [name="ID"]').val(self.data().id);
+	$('#update [name="Name"]').val(self.parent().parent().children()[1].innerText);
+	$(`#update [name="Sex"][value="${self.parent().parent().children()[2].innerText}"]`)[0].checked = true;
+	$('#update [name="SID"]').val(self.parent().parent().children()[3].innerText); $('#update').css('top', '35%');
+});
+$('table').on('click', '.removeStudent', function () {
+	var self = $(this), ID = self.data().id;
+	Swal.fire({
+		title: '删除学生', text: `你确定要删除ID为${ID}的学生 ${self.parent().parent().children()[1].innerText} 吗？`, icon: 'warning',
+		cancelButtonText: '取消', showCancelButton: true, confirmButtonText: '确定'
+	}).then(function (e) {
+		if (e.isConfirmed) {
+			$.ajax('?type=remove', { type: 'post', data: { ID } }).done(function (data) {
+				switch (data.code) {
+					case 0: Swal.fire('成功', htmlEscape(data.msg), 'success').then(getRecord); break;
+					case 7: noLogin(); break;
+					case 8: sudo(function () { $(`.removeStudent[data-id="${ID}"]`).click(); }); break;
+					default: Swal.fire('失败', htmlEscape(data.msg), 'error');
+				}
+			}).fail(function (xhr, error, text) { console.log(xhr); console.log(`${error}: ${text}`); Swal.fire('删除失败！', '详细信息请见控制台！', 'error'); });
+		}
+	});
+});
+$('#closeUpdate').click(function () { $('#update').css('top', '-50rem'); });
+$('#openAdd').click(function () { $('#insert').css('top', '35%'); });
+$('#closeAdd').click(function () { $('#insert').css('top', '-50rem'); });
+$('[for]').keydown(function (e) { if (e.keyCode === 13) { $('#' + $(this).attr('for'))[0].checked = true; } });
+$('#insert').ajaxForm(getAjaxConfig('?type=insert', '添加', 3, '请选择性别！', getRecord, function () { $('#insert [type="submit"]').click(); }));
+$('#update').ajaxForm(getAjaxConfig('?type=update', '修改', 4, '请选择性别！', getRecord, function () { $('#update [type="submit"]').click(); }))
+$('#resetUpdate').click(function () { $(`.editStudent[data-id="${$('#update [name="ID"]').val()}"]`).click(); });
+$('#search').click(function () {
+	inputAjax('查询学生', '请输入要查询的学生的学号：', 'number', { required: 'required', min: 1000000000, max: 9999999999 }, '请输入学生的学号', '查询', '/student/get', 'get', 'SID',
+		function (data) { var d = data.data[0]; Swal.fire('已查询到数据', `ID：${d[0]}<br/>姓名：${htmlEscape(d[1])}<br/>性别：${d[2]}<br/>学号：${htmlEscape(d[3])}`, 'success'); },
+		function (data, code) { if (code === 2) { Swal.fire('未查询到数据', htmlEscape(data.msg), 'error'); } }, '查询失败！');
+}); getRecord();</script>{% endblock %}

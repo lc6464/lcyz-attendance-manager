@@ -1,0 +1,9 @@
+{% extends "layout.html" %}{% block title %}考勤登记{% endblock %}
+{% block css %}<style>header h1 { font-size: 2.5rem; margin: 1rem 0; } @media (max-width: 295px) { body::before { height: 6rem; } }
+#htmlEscape { display: none; }</style>{% endblock %}
+{% block head %}<script src="/static/js/jquery/form.js"></script><script src="/static/js/alert.js"></script><script src="/static/js/tools.js"></script>{% endblock %}
+{% block nav %}<a href="/" title="首页">首页</a>{% endblock %}{% block header %}<h1>考勤登记</h1>{% endblock %}
+{% block main %}<div id="controls"><button id="openIn">签到</button><button id="openOut">签退</button><button id="search">查询学号</button></div>
+
+<div id="htmlEscape"></div><script>
+</script>{% endblock %}
