@@ -1,6 +1,7 @@
 from handles.templates import app, check
 from flask import request, session, redirect, render_template
 from database import student, information, attendance, account
+from session import Session
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -17,8 +18,9 @@ def login():
 				if len(result) == 1:
 					if result[0][2] == password:
 						session.permanent = True
-						session['user'] = user
-						session['password'] = password
+						r = Session.Add(user)[0]
+						session['uuid'] = r
+						Session.Set(r, {'password': password})
 						return {'code': 0, 'msg': '登录成功！'}
 					else:
 						return {'code': 1, 'msg': '用户名或密码错误！'}
@@ -44,8 +46,9 @@ def first_config():
 			if user != None and password != None and user != '' and password != '':
 				if check.password(password):
 					session.permanent = True
-					session['user'] = user
-					session['password'] = password
+					r = Session.Add(user)[0]
+					session['uuid'] = r
+					Session.Set(r, {'password': password})
 					return {'code': 0, 'msg': '“%s” 创建成功！请牢记账号密码！' % account.insert(request.form['User'], request.form['Password'])[0][1]}
 				else:
 					return {'code': 4, 'msg': '密码过于简单！'}

@@ -4,6 +4,7 @@ from handles.error import app
 from database import account
 from flask import session, request
 import check
+from session import Session
 
 @app.route('/account/get', methods=['GET'])
 def get_account():
@@ -20,9 +21,8 @@ def get_account():
 @app.route('/logout', methods=['GET'])
 def logout():
 	if check.login(session):
-		session.pop('user', None)
-		session.pop('password', None)
-		session.pop('sudo', None)
+		Session.Remove(session['uuid'])
+		session.pop('uuid', None)
 		return {'code': 0, 'msg': '退出登录成功！'}
 	else:
 		return {'code': 5, 'msg': '未登录！无需退出登录！'}
@@ -34,9 +34,10 @@ def account_manage():
 		if 'type' in request.args:
 			data = request.form
 			t = request.args['type']
+			user = Session.Get(session['uuid'])[1]
 			if t == 'changePassword':
 				if 'Password' in data and 'NewPassword' in data:
-					r = account.select('名称', session['user'])
+					r = account.select('名称', user)
 					if len(r) != 0:
 						r = r[0]
 						if data['Password'] == r[2]:
@@ -50,7 +51,7 @@ def account_manage():
 					return {'code': 3, 'msg': '数据不合法！'}
 			elif t == 'newAccount':
 				if 'Password' in data and 'NewAccount' in data and 'NewPassword' in data:
-					r = account.select('名称', session['user'])
+					r = account.select('名称', user)
 					if len(r) != 0:
 						r = r[0]
 						if data['Password'] == r[2]:
@@ -64,14 +65,13 @@ def account_manage():
 					return {'code': 3, 'msg': '数据不合法！'}
 			elif t == 'removeAccount':
 				if 'Password' in data:
-					r = account.select('名称', session['user'])
+					r = account.select('名称', user)
 					if len(r) != 0:
 						r = r[0]
 						if data['Password'] == r[2]:
 							account.delete(r[0])
-							session.pop('user', None)
-							session.pop('password', None)
-							session.pop('sudo', None)
+							Session.Remove(session['uuid'])
+							session.pop('uuid', None)
 							return {'code': 0, 'msg': '删除账户 %s 成功！' % r[1]}
 						else:
 							return {'code': 1, 'msg': '当前账户密码错误！'}

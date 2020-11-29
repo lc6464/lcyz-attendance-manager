@@ -1,1 +1,2 @@
 Flask>=1.1.2
+Sqlite-Session==0.1.0

@@ -20,8 +20,9 @@ function getRecord() {
                     if (this[3] === self[1]) {
                         var name = this[1],
                             time = new Date(self[2]),
-                            status = {i: '签到', o: '签退'}[self[3]];
-                            $('tbody').append(`<tr><td>${self[0]}</td><td>${name}</td><td>${this[3]}</td><td>${time}</td><td>${status}</td></tr>`);
+							status = {i: '签到', o: '签退'}[self[3]];
+						timeStr = `${time.getFullYear()}年${time.getMonth()+1}月${time.getDate()}日${time.getHours()}时${time.getMinutes()}分${time.getSeconds()}秒`;
+                        $('tbody').append(`<tr><td>${self[0]}</td><td>${name}</td><td>${this[3]}</td><td>${timeStr}</td><td>${status}</td></tr>`);
                     }
                 });
 			});

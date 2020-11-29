@@ -1,11 +1,12 @@
 from handles.static import app, check
 from flask import render_template, redirect, session
 from database import student, information, attendance, account
+from session import Session
 
 @app.route('/', methods=['GET'])
 def index():
 	if check.login(session):
-		return render_template('index.html', user=session['user'])
+		return render_template('index.html', user=Session.Get(session['uuid'])[1])
 	else:
 		return redirect('/login')
 
