@@ -139,3 +139,6 @@ batch/
 
 # Build
 build/
+
+# Try WSGI but failed.
+web.config

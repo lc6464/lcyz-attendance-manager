@@ -26,7 +26,7 @@ def attendance_insert():
 				if data['Status'] in ['i', 'o']:
 					if student.select('学号', data['SID']) != []:
 						attendance.insert(data['SID'], strftime('%Y-%m-%dT%H:%M:%S+08:00'), data['Status'])
-						return {'code': 0, 'msg': '记录成功！'}
+						return {'code': 0, 'msg': '%s 记录成功！' % data['SID']}
 					else:
 						return {'code': 2, 'msg': '学号为“%s”的学生不存在！'%data['SID']}
 				else:

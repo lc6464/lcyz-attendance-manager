@@ -12,7 +12,7 @@ label { display: block; margin: 0.7rem 0; font-size: 1.2rem; } label label { dis
 {% block head %}<script src="/static/js/jquery/form.js"></script><script src="/static/js/alert.js"></script><script src="/static/js/tools.js"></script>{% endblock %}
 {% block nav %}<a href="/" title="首页">首页</a>{% endblock %}{% block header %}<h1>账号管理</h1>{% endblock %}
 {% block main %}<div id="controls"><button id="openChangePassword">修改密码</button><button id="openNewAccount">新建账户</button><button id="search">查找账号</button>
-<button id="logout">退出登录</button><button id="remove">删除账户</button></div>
+<button id="logout">退出登录</button><button id="remove">删除此账户</button></div>
 <form id="changePassword"><div class="formDiv"><img id="closeChangePassword" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" /><h2>修改密码</h2>
 <div class="inputs"><label>旧密码：<input name="Password" placeholder="请输入旧密码" required type="password"/></label>
 	<label>新密码：<input name="NewPassword" placeholder="请输入新密码" required type="password"/></label></div>
@@ -49,7 +49,7 @@ $('#logout').click(function () {
 	});
 });
 $('#remove').click(function () {
-	Swal.fire({ title: '删除账户', html: `你确定要删除账户吗？<br/><b style="color:red">删除后账户将永久无法找回！</b>`, icon: 'warning',
+	Swal.fire({ title: '删除此账户', html: `你确定要删除此账户吗？<br/><b style="color:red">删除后此账户将永久无法找回！</b>`, icon: 'warning',
 	cancelButtonText: '取消', showCancelButton: true, confirmButtonText: '确定' }).then(function (e) {
 		if (e.isConfirmed) {
 			inputAjax('<b style="color:red">删除账户验证</b>', '请输入此账户的密码：', 'password',

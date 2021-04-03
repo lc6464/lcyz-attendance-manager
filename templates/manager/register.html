@@ -1,9 +1,27 @@
 {% extends "layout.html" %}{% block title %}考勤登记{% endblock %}
 {% block css %}<style>header h1 { font-size: 2.5rem; margin: 1rem 0; } @media (max-width: 295px) { body::before { height: 6rem; } }
-#htmlEscape { display: none; }</style>{% endblock %}
+form { text-align: center; } .formDiv { background: #353535; display: inline-block; padding: 1.2rem 1.5rem 2rem; }
+label { display: block; margin: 0.7rem 0; font-size: 1.2rem; } label label { display: inline; margin: 0; font-size: 1.3rem; } .inputs { margin: 1.6rem 0; }
+.buttons button { padding: 0.3rem 0.8rem; font-size: 1.15rem; } .buttons button:first-of-type { margin-right: 1.5rem; } input { min-width: 12rem; }
+#in, #out { position: fixed; transform: translate(-50%, -50%); left: 50%; top: -50rem; transition: 0.5s top; z-index: 110; }
+#closeIn, #closeOut { width: 1rem; height: 1rem; display: inline-block; cursor: pointer; position: absolute; top: 1.2rem; right: 1.2rem; }
+#controls button { display: block; margin: 1rem auto; font-size: 1.2rem; padding: 0.4rem 1rem; border-radius: 1rem; } #htmlEscape { display: none; }</style>{% endblock %}
 {% block head %}<script src="/static/js/jquery/form.js"></script><script src="/static/js/alert.js"></script><script src="/static/js/tools.js"></script>{% endblock %}
 {% block nav %}<a href="/" title="首页">首页</a>{% endblock %}{% block header %}<h1>考勤登记</h1>{% endblock %}
-{% block main %}<div id="controls"><button id="openIn">签到</button><button id="openOut">签退</button><button id="search">查询学号</button></div>
-
+{% block main %}<div id="controls"><button id="openIn">签到</button><button id="openOut">签退</button></div>
+<form id="in"><div class="formDiv"><img id="closeIn" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" /><h2>签到</h2>
+	<div class="inputs"><label>学号：<input name="SID" placeholder="请输入学号" required type="number" min="1000000000" max="9999999999"/></label></div>
+	<input name="Status" required type="hidden" value="i"/><div class="buttons"><button type="reset">重置</button><button type="submit">签到</button></div>
+</div></form>
+<form id="out"><div class="formDiv"><img id="closeOut" src="/static/js/jquery/mobile/images/icons-svg/delete-white.svg" alt="Close" /><h2>签退</h2>
+	<div class="inputs"><label>学号：<input name="SID" placeholder="请输入学号" required type="number" min="1000000000" max="9999999999"/></label></div>
+	<input name="Status" required type="hidden" value="o"/><div class="buttons"><button type="reset">重置</button><button type="submit">签退</button></div>
+</div></form>
 <div id="htmlEscape"></div><script>
+$('#openIn').click(function () { $('#in').css('top', '35%'); });
+$('#closeIn').click(function () { $('#in').css('top', '-50rem'); });
+$('#openOut').click(function () { $('#out').css('top', '35%'); });
+$('#closeOut').click(function () { $('#out').css('top', '-50rem'); });
+$('#in').ajaxForm(getAjaxConfig('insert', '签到', 2, '请填写学号！', () => {}, () => $('#in [type="submit"]').click() ));
+$('#out').ajaxForm(getAjaxConfig('insert', '签退', 2, '请填写学号！', () => {}, () => $('#out [type="submit"]').click() ));
 </script>{% endblock %}

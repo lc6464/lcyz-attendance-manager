@@ -1,5 +1,5 @@
 from handles.manager.attendance import app
-from database import student
+from database import student, attendance
 from flask import session, request
 import re, check
 
@@ -55,12 +55,16 @@ def student_manage():
 						return {'code': 3, 'msg': '数据不合法！'}
 				elif t == 'remove':
 					if 'ID' in data:
-						r = student.select('ID', data['ID'])
-						if len(r) == 0:
+						sel = student.select('ID', data['ID'])
+						if len(sel) == 0:
 							return {'code': 2, 'msg': 'ID为%s的同学不存在！' % data['ID']}
 						else:
 							r = student.delete(data['ID'])[0]
-							return {'code': 0, 'msg': '已删除 %s 同学！\\r\\nID：%s\\r\\n性别：%s\\r\\n学号：%s' % (r[1], r[0], r[2], r[3])}
+							attendances = attendance.select('学号', sel[0][3])
+							for i in attendances:
+								attendance.delete(i[0])
+							return {'code': 0, 'msg': '已删除 %s 同学，以及%s的%s条考勤记录！\\r\\nID：%s\\r\\n性别：%s\\r\\n学号：%s'
+								% (r[1], ('她' if r[2] == '女' else '他'), len(attendances), r[0], r[2], r[3])}
 					else:
 						return {'code': 3, 'msg': '数据不合法！'}
 				else:
