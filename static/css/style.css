@@ -32,3 +32,6 @@ nav {
 #navLinks a { line-height: 3rem; font-size: 1.6rem; padding: 0 0.4rem; text-decoration: underline; }
 
 header h1 { text-align: center; }
+
+
+.swal2-container { font-family: 'Microsoft YaHei'; }
