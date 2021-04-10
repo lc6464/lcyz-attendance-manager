@@ -10,12 +10,14 @@ import config, click
 def run(host='', port=0, debug=False, secret_key='dev', cache_max_age=0, session_lifttime=0):
 	from handles import app
 	from datetime import timedelta
+	from webbrowser import open_new_tab
 	app.secret_key = secret_key
 	app.config['SEND_FILE_MAX_AGE_DEFAULT'] = cache_max_age
 	app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=session_lifttime)
 	if debug:
 		if not click.confirm('Warning: Are you sure to enable server debugging mode? This will be very dangerous!', False, False):
 			debug = False
+	open_new_tab('http://%s:%s/' % (host, port))
 	app.run(host=host, port=port, debug=debug)
 
 

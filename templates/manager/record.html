@@ -28,7 +28,7 @@ function getRecord() {
 					title = this[2].replace(/^(\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)\+08:00$/, '$1年$2月$3日$4时$5分$6秒');
 				$('tbody').append(`<tr><td>${this[0]}</td><td>${name}</td><td>${this[1]}</td><td title="${title}">${timeStr}</td><td>${status}</td></tr>`);
 			});
-		} else if (data.code === 2) { $('table').html(''); $('#students').append('<div id="no-data" style="font-size:1.3rem">无数据！</div>'); }
+		} else if (data.code === 2) { $('table').html(''); $('#records').append('<div id="no-data" style="font-size:1.3rem">无数据！</div>'); }
 		else { $('table').html(''); noLogin(); }
 	});
 }
